@@ -38,22 +38,23 @@ pipeline {
                 sh 'mvn surefire-report:report'
             }
         }
-stage('Sonar Analysis') {
-    steps {
-        script {
-            
-            sh '''
-                mvn sonar:sonar \
-                    -Dsonar.projectKey=my_project_key \
-                    -Dsonar.host.url=$SONAR_HOST_URL \
-                    -Dsonar.login=$SONAR_AUTH_TOKEN
-            '''
+stage('SonarQube Analysis') {
+            steps {
+                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                    sh '''
+                        sonar-scanner \
+                            -Dsonar.projectKey=${JOB_NAME} \
+                            -Dsonar.projectName=${JOB_NAME} \
+                           
+                            -Dsonar.login=${SONAR_TOKEN}
+                    '''
+                }
+            }
         }
-    }
-}
 
 
 
+        
     }
 
 }
