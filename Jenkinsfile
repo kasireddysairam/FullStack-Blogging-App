@@ -1,29 +1,52 @@
-pipeline { 
-    agent any
-    
-    tools {
-        maven 'maven3'
-        jdk 'jdk17'
+pipeline {
+    agent {
+        node{
+            label "java-slave"
+        }
     }
-
+   environment {
+       SONAR_HOST_URL= "http://13.201.40.229:9000"
+        SONAR_AUTH_TOKEN = credentials('sonar-token')
+        PATH = "/opt/apache-maven-3.9.9/bin:$PATH"
+   }
+    
     stages {
         
-        stage('Compile') {
+         stage('cleanup') {
             steps {
-            sh  "mvn compile"
+                // Clean workspace directory for the current build
+            
+                deleteDir ()   
             }
         }
-        
-        stage('Test') {
+        stage('git checkout') {
             steps {
-                sh "mvn test"
+
+                git branch: 'main', url: 'https://github.com/kasireddysairam/tweet-trend-new.git'
             }
         }
-        
-        stage('Package') {
+     stage(' mvn build') {
             steps {
-                sh "mvn package"
+
+        sh 'mvn clean  install  -Dmaven.test.skip=true'
             }
+        }
+stage('Maven Sonar Analysis') {
+    steps {
+        script {
+            
+            sh '''
+                mvn sonar:sonar \
+                    -Dsonar.projectKey=my_project_key \
+                    -Dsonar.host.url=$SONAR_HOST_URL \
+                    -Dsonar.login=$SONAR_AUTH_TOKEN
+            '''
         }
     }
+}
+
+
+
+    }
+
 }
