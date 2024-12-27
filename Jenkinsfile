@@ -31,6 +31,14 @@ pipeline {
         sh 'mvn clean  install  -Dmaven.test.skip=true'
             }
         }
+
+        stage('Unit Test') {
+            steps {
+                echo '<--------------- Unit Testing started  --------------->'
+                sh 'mvn surefire-report:report'
+                echo '<------------- Unit Testing stopped  --------------->'
+            }
+        }
 stage('Maven Sonar Analysis') {
     steps {
         script {
