@@ -22,7 +22,7 @@ pipeline {
         stage('git checkout') {
             steps {
 
-                git branch: 'main', url: 'https://github.com/kasireddysairam/FullStack-Blogging-App.git'
+                git branch: 'main', url: 'https://github.com/kasireddysairam/project_valaxy.git'
             }
         }
      stage(' mvn build') {
