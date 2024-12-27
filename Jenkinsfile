@@ -34,12 +34,11 @@ pipeline {
 
         stage('Unit Test') {
             steps {
-                echo '<--------------- Unit Testing started  --------------->'
+               
                 sh 'mvn surefire-report:report'
-                echo '<------------- Unit Testing stopped  --------------->'
             }
         }
-stage('Maven Sonar Analysis') {
+stage('Sonar Analysis') {
     steps {
         script {
             
