@@ -1,60 +1,79 @@
+
 pipeline {
-    agent {
-        node{
-            label "java-slave"
-        }
-    }
-   environment {
-       SONAR_HOST_URL= "http://13.201.40.229:9000"
-        SONAR_AUTH_TOKEN = credentials('sonar-token')
-        PATH = "/opt/apache-maven-3.9.9/bin:$PATH"
-   }
+    agent any
     
+tools {
+        maven 'maven'  
+    } 
+    environment {
+        SCANNER_HOME=tool 'sonarqube_scanner'
+    }
+
     stages {
+        stage('git checkout ') {
+            steps {
+                git branch: 'main', url: 'https://github.com/kasireddysairam/spring-framework-petclinic.git'
+            }
+        }
+
+        stage('mvn compile') {
+            steps {
+                script {
+                    // Run Maven or Gradle build
+                    sh 'mvn  compile'
+                }
+            }
+        }
         
-         stage('cleanup') {
-            steps {
-                // Clean workspace directory for the current build
-            
-                deleteDir ()   
-            }
-        }
-        stage('git checkout') {
-            steps {
 
-                git branch: 'main', url: 'https://github.com/kasireddysairam/project_valaxy.git'
-            }
-        }
-     stage(' mvn build') {
+        stage('Unit Test maven') {
             steps {
-
-        sh 'mvn clean  install  -Dmaven.test.skip=true'
-            }
-        }
-
-        stage('Unit Test') {
-            steps {
-               
-                sh 'mvn surefire-report:report'
-            }
-        }
-stage('SonarQube Analysis') {
-            steps {
-                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                    sh '''
-                        sonar-scanner \
-                            -Dsonar.projectKey=${JOB_NAME} \
-                            -Dsonar.projectName=${JOB_NAME} \
-                           
-                            -Dsonar.login=${SONAR_TOKEN}
-                    '''
+                script {
+                    // Run Maven or Gradle build
+                    sh 'mvn   test'
                 }
             }
         }
 
 
+         
+        stage("Sonarqube Analysis "){
+            steps{
+                withSonarQubeEnv('sonarqube-server') {
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Petclinic \
+                    -Dsonar.java.binaries=. \
+                    -Dsonar.projectKey=Petclinic '''
+    
+                }
+            }
+        }
+        
+stage("SonarQube Quality Gate Check") {
+            steps {
+                script {
+                def qualityGate = waitForQualityGate()
+                    
+                    if (qualityGate.status != 'OK') {
+                        echo "${qualityGate.status}"
+                        error "Quality Gate failed: ${qualityGateStatus}"
+                    }
+                    else {
+                        echo "${qualityGate.status}"
+                        echo "SonarQube Quality Gates Passed"
+                    }
+                }
+            }
+        }
+
+stage('Maven Build : mave') {
+            steps {
+                script {
+                    sh 'mvn clean install -DskipTests' 
+                }
+            }
+        }
 
         
-    }
 
+    }
 }
