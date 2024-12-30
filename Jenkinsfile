@@ -12,7 +12,7 @@ tools {
     stages {
         stage('git checkout ') {
             steps {
-                git branch: 'main', url: 'https://github.com/kasireddysairam/spring-framework-petclinic.git'
+                git branch: 'main', url: 'https://github.com/kasireddysairam/project_valaxy.git'
             }
         }
 
@@ -40,9 +40,9 @@ tools {
         stage("Sonarqube Analysis "){
             steps{
                 withSonarQubeEnv('sonarqube-server') {
-                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Petclinic \
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=twitterapp \
                     -Dsonar.java.binaries=. \
-                    -Dsonar.projectKey=Petclinic '''
+                    -Dsonar.projectKey=twitterapp '''
     
                 }
             }
